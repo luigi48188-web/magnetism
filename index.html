@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sequential Countdown Timer</title>
+    <style>
+        :root {
+            --bg-color: #121214;
+            --card-bg: #1e1e24;
+            --accent-color: #6366f1;
+            --text-main: #ffffff;
+            --text-muted: #a1a1aa;
+        }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .countdown-container {
+            text-align: center;
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+        }
+        h2 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        #target-title {
+            color: var(--accent-color);
+            display: block;
+            font-size: 1.8rem;
+            margin-top: 0.5rem;
+        }
+        #milestone-message {
+            font-size: 1.1rem;
+            color: #34d399;
+            margin: 1rem 0 0 0;
+            font-weight: 500;
+            min-height: 1.5rem;
+        }
+        .timer-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+        .time-box {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            margin: 0 0.5rem;
+            padding: 1rem 0;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .time-box span {
+            display: block;
+        }
+        .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="countdown-container">
+        <h2>Counting Down To: <span id="target-title">Loading...</span></h2>
+        <p id="milestone-message"></p>
+        <div class="timer-display">
+            <div class="time-box">
+                <span class="number" id="days">00</span>
+                <span class="label">Days</span>
+            </div>
+            <div class="time-box">
+                <span class="number" id="hours">00</span>
+                <span class="label">Hours</span>
+            </div>
+            <div class="time-box">
+                <span class="number" id="minutes">00</span>
+                <span class="label">Mins</span>
+            </div>
+            <div class="time-box">
+                <span class="number" id="seconds">00</span>
+                <span class="label">Secs</span>
+            </div>
+        </div>
+    </div>
+    <script>
+        const targetMilestones = [
+            { label: "October 5", month: 9, day: 5, message: "Getting closer to Fall Break!" },
+            { label: "November 3", month: 10, day: 3, message: "Getting closer to Thanksgiving Break!" },
+            { label: "December 8", month: 11, day: 8, message: "Getting closer to Winter Break!" },
+            { label: "January 11", month: 0, day: 11, message: "Only Half of the Year Left!" }
+        ];
+        function getNextTarget() {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            for (let milestone of targetMilestones) {
+                let targetYear = currentYear;
+                if (milestone.month === 0 && now.getMonth() >= 9) {
+                    targetYear = currentYear + 1;
+                }
+                const targetDate = new Date(targetYear, milestone.month, milestone.day, 0, 0, 0);
+                
+                if (targetDate - now > 0) {
+                    return { 
+                        date: targetDate, 
+                        label: `${milestone.label}, ${targetYear}`,
+                        message: milestone.message 
+                    };
+                }
+            }
+            const firstMilestone = targetMilestones[0];
+            return { 
+                date: new Date(currentYear + 1, firstMilestone.month, firstMilestone.day, 0, 0, 0), 
+                label: `${firstMilestone.label}, ${currentYear + 1}`,
+                message: firstMilestone.message
+            };
+        }
+        let activeTarget = getNextTarget();
+        function updateCountdown() {
+            const now = new Date();
+            let timeRemaining = activeTarget.date - now;
+            if (timeRemaining <= 0) {
+                activeTarget = getNextTarget();
+                timeRemaining = activeTarget.date - now;
+            }
+            document.getElementById("target-title").innerText = activeTarget.label;
+            document.getElementById("milestone-message").innerText = activeTarget.message;
+            const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+            document.getElementById("days").innerText = String(days).padStart(2, '0');
+            document.getElementById("hours").innerText = String(hours).padStart(2, '0');
+            document.getElementById("minutes").innerText = String(minutes).padStart(2, '0');
+            document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
+        }
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
